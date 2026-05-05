@@ -12,6 +12,7 @@ export default function WeightScreen() {
       title="Сколько вы весите?"
       subtitle="Вес помогает точнее рассчитать рекомендации"
       step={4}
+      scrollEnabled={false}
       onNext={() => router.push('/onboarding/activity')}>
       <OnboardingNumberPicker value={weight} min={35} max={220} unit="кг" onChange={setWeight} />
     </OnboardingLayout>

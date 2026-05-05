@@ -68,3 +68,21 @@ npm run start:lan
 - `npm.cmd run lint` — прошел.
 
 **Следующий шаг:** уточнить точный Figma summary frame, когда лимит Figma MCP снова позволит получить context, и затем аккуратно довести summary до полного соответствия макету.
+
+## 2026-05-05 — свайповый wheel picker для числовых onboarding-экранов
+
+**Что исправлено:** числовой выбор на экранах возраста, роста и веса переведен с кнопок-стрелок на вертикальный wheel picker.
+
+**Почему старое поведение было неправильным:** в Figma на экранах `age`, `height` и `weight` показан барабан с 5 видимыми значениями и центральной подсвеченной строкой. Стрелок/галочек сверху и снизу в макете нет, поэтому прежний UI с нажатием на `chevron-up/down` не соответствовал дизайну и плохо передавал ожидаемое свайповое поведение.
+
+**Что изменено:**
+- `components/onboarding/onboarding-number-picker.tsx` — заменен на `FlatList` picker с `snapToInterval`, `decelerationRate="fast"`, `onMomentumScrollEnd`, `getItemLayout`, центральной подсветкой и 5 видимыми строками.
+- `components/onboarding/onboarding-layout.tsx` — добавлен `scrollEnabled`, чтобы числовые экраны могли отключать внешний `ScrollView` и не конфликтовать с жестами picker.
+- `app/onboarding/age.tsx`
+- `app/onboarding/height.tsx`
+- `app/onboarding/weight.tsx`
+
+**Как проверить:** запустить проект через `npm run start:lan`, пройти Welcome → Gender → Age и проверить, что на `Age`, `Height`, `Weight` значение меняется свайпом вверх/вниз, выбранная строка snap-ится по центру, unit (`лет`, `см`, `кг`) показывается справа только у выбранного значения.
+
+**Проверки:**
+- `npm.cmd run lint` — прошел.

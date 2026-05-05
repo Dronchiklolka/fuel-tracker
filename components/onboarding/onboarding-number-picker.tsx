@@ -1,7 +1,19 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useMemo, useRef } from 'react';
+import {
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 
 import { onboardingColors } from './onboarding-theme';
+
+const ROW_HEIGHT = 44;
+const VISIBLE_ROWS = 5;
+const PICKER_HEIGHT = ROW_HEIGHT * VISIBLE_ROWS;
+const CENTER_PADDING = ROW_HEIGHT * Math.floor(VISIBLE_ROWS / 2);
 
 type OnboardingNumberPickerProps = {
   value: number;
@@ -18,103 +30,125 @@ export function OnboardingNumberPicker({
   max,
   onChange,
 }: OnboardingNumberPickerProps) {
-  const visibleValues = [value - 2, value - 1, value, value + 1, value + 2].filter(
-    (item) => item >= min && item <= max
+  const listRef = useRef<FlatList<number>>(null);
+  const values = useMemo(
+    () => Array.from({ length: max - min + 1 }, (_, index) => min + index),
+    [max, min]
   );
+  const selectedIndex = Math.min(values.length - 1, Math.max(0, value - min));
 
-  const updateValue = (nextValue: number) => {
-    onChange(Math.min(max, Math.max(min, nextValue)));
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => {
+      listRef.current?.scrollToIndex({
+        index: selectedIndex,
+        animated: false,
+      });
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [selectedIndex]);
+
+  const handleMomentumScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const nextIndex = Math.min(
+      values.length - 1,
+      Math.max(0, Math.round(event.nativeEvent.contentOffset.y / ROW_HEIGHT))
+    );
+    const nextValue = values[nextIndex];
+
+    if (nextValue !== value) {
+      onChange(nextValue);
+    }
   };
 
   return (
     <View style={styles.card}>
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => updateValue(value - 1)}
-        style={styles.stepperButton}
-        hitSlop={10}>
-        <MaterialCommunityIcons name="chevron-up" size={28} color={onboardingColors.primaryText} />
-      </Pressable>
-
-      <View style={styles.values}>
-        {visibleValues.map((item) => {
+      <View pointerEvents="none" style={styles.selectionHighlight} />
+      <FlatList
+        ref={listRef}
+        data={values}
+        keyExtractor={(item) => String(item)}
+        renderItem={({ item }) => {
           const selected = item === value;
 
           return (
-            <Pressable
-              key={item}
-              accessibilityRole="button"
-              accessibilityState={{ selected }}
-              onPress={() => updateValue(item)}
-              style={[styles.valueRow, selected && styles.valueRowSelected]}>
+            <View style={styles.valueRow}>
               <Text style={[styles.valueText, selected && styles.valueTextSelected]}>{item}</Text>
               {selected ? <Text style={styles.unit}>{unit}</Text> : null}
-            </Pressable>
+            </View>
           );
+        }}
+        getItemLayout={(_, index) => ({
+          length: ROW_HEIGHT,
+          offset: ROW_HEIGHT * index,
+          index,
         })}
-      </View>
-
-      <Pressable
-        accessibilityRole="button"
-        onPress={() => updateValue(value + 1)}
-        style={styles.stepperButton}
-        hitSlop={10}>
-        <MaterialCommunityIcons name="chevron-down" size={28} color={onboardingColors.primaryText} />
-      </Pressable>
+        initialScrollIndex={selectedIndex}
+        onMomentumScrollEnd={handleMomentumScrollEnd}
+        onScrollToIndexFailed={({ index }) => {
+          requestAnimationFrame(() => {
+            listRef.current?.scrollToIndex({ index, animated: false });
+          });
+        }}
+        snapToInterval={ROW_HEIGHT}
+        decelerationRate="fast"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.listContent}
+        style={styles.list}
+      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: {
-    minHeight: 228,
-    alignItems: 'center',
-    justifyContent: 'center',
+    height: 228,
     paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingVertical: 4,
     borderRadius: 16,
     backgroundColor: onboardingColors.card,
+    overflow: 'hidden',
   },
-  stepperButton: {
-    width: 44,
-    height: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  values: {
-    alignSelf: 'stretch',
-    gap: 2,
-  },
-  valueRow: {
-    height: 42,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  selectionHighlight: {
+    position: 'absolute',
+    left: 16,
+    right: 16,
+    top: 92,
+    height: ROW_HEIGHT,
     borderRadius: 12,
-    gap: 96,
-  },
-  valueRowSelected: {
-    height: 44,
     backgroundColor: onboardingColors.background,
   },
+  list: {
+    height: PICKER_HEIGHT,
+    alignSelf: 'stretch',
+    zIndex: 1,
+  },
+  listContent: {
+    paddingVertical: CENTER_PADDING,
+  },
+  valueRow: {
+    height: ROW_HEIGHT,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   valueText: {
-    minWidth: 44,
-    color: onboardingColors.secondaryText,
+    color: onboardingColors.mutedText,
     fontSize: 17,
     fontWeight: '500',
-    lineHeight: 20,
+    lineHeight: ROW_HEIGHT,
+    letterSpacing: 0,
     textAlign: 'center',
+  },
+  unit: {
+    position: 'absolute',
+    right: 32,
+    color: onboardingColors.primaryText,
+    fontSize: 15,
+    lineHeight: ROW_HEIGHT,
+    letterSpacing: 0,
   },
   valueTextSelected: {
     color: onboardingColors.primaryText,
     fontSize: 20,
     fontWeight: '600',
-    lineHeight: 24,
-  },
-  unit: {
-    minWidth: 26,
-    color: onboardingColors.primaryText,
-    fontSize: 15,
-    lineHeight: 18,
   },
 });

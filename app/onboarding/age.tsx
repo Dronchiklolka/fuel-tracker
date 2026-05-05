@@ -12,6 +12,7 @@ export default function AgeScreen() {
       title="Сколько вам лет?"
       subtitle="Это влияет на расчёт рекомендаций"
       step={2}
+      scrollEnabled={false}
       onNext={() => router.push('/onboarding/height')}>
       <OnboardingNumberPicker value={age} min={13} max={100} unit="лет" onChange={setAge} />
     </OnboardingLayout>

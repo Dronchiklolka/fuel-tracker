@@ -18,6 +18,7 @@ type OnboardingLayoutProps = PropsWithChildren<{
   onNext: () => void;
   canGoBack?: boolean;
   contentTopOffset?: number;
+  scrollEnabled?: boolean;
 }>;
 
 export function OnboardingLayout({
@@ -29,9 +30,24 @@ export function OnboardingLayout({
   onNext,
   canGoBack = true,
   contentTopOffset = 26,
+  scrollEnabled = true,
   children,
 }: OnboardingLayoutProps) {
   const insets = useSafeAreaInsets();
+  const contentStyle = [
+    styles.content,
+    {
+      paddingTop: contentTopOffset,
+      paddingBottom: insets.bottom + 136,
+    },
+  ];
+  const content = (
+    <>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.subtitle}>{subtitle}</Text>
+      <View style={styles.body}>{children}</View>
+    </>
+  );
 
   return (
     <View style={styles.screen}>
@@ -50,19 +66,13 @@ export function OnboardingLayout({
         <OnboardingProgress step={step} totalSteps={totalSteps} />
       </View>
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          {
-            paddingTop: contentTopOffset,
-            paddingBottom: insets.bottom + 136,
-          },
-        ]}
-        showsVerticalScrollIndicator={false}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
-        <View style={styles.body}>{children}</View>
-      </ScrollView>
+      {scrollEnabled ? (
+        <ScrollView contentContainerStyle={contentStyle} showsVerticalScrollIndicator={false}>
+          {content}
+        </ScrollView>
+      ) : (
+        <View style={contentStyle}>{content}</View>
+      )}
 
       <View style={[styles.bottomButton, { paddingBottom: Math.max(insets.bottom + 2, 36) }]}>
         <OnboardingButton title={nextLabel} onPress={onNext} />

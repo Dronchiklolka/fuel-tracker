@@ -12,6 +12,7 @@ export default function HeightScreen() {
       title="Какой у вас рост?"
       subtitle="Рост помогает точнее рассчитать рекомендации"
       step={3}
+      scrollEnabled={false}
       onNext={() => router.push('/onboarding/weight')}>
       <OnboardingNumberPicker value={height} min={120} max={230} unit="см" onChange={setHeight} />
     </OnboardingLayout>
