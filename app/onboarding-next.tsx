@@ -14,8 +14,8 @@ export default function OnboardingNextPlaceholderScreen() {
     <View style={styles.screen}>
       <StatusBar style="dark" backgroundColor={COLORS.background} />
       <View style={styles.content}>
-        <Text style={styles.title}>Следующий экран</Text>
-        <Text style={styles.subtitle}>Здесь позже появится первый шаг onboarding.</Text>
+        <Text style={styles.title}>Онбординг завершён</Text>
+        <Text style={styles.subtitle}>Здесь позже появится переход в основное приложение.</Text>
         <Link href="/" style={styles.link}>
           Назад
         </Link>

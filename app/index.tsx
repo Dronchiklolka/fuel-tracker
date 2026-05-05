@@ -55,7 +55,7 @@ export default function WelcomeScreen() {
 
       <Pressable
         accessibilityRole="button"
-        onPress={() => router.push('/onboarding-next')}
+        onPress={() => router.push('/onboarding/gender')}
         style={({ pressed }) => [
           styles.button,
           {
