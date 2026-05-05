@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "scripts": {
     "start": "expo start",
-    "start:lan": "set REACT_NATIVE_PACKAGER_HOSTNAME=192.168.1.100&& expo start --host lan -c",
+    "start:lan": "node ./scripts/start-lan.js",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
